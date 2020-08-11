@@ -1,4 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0
+ifeq ($(CONFIG_MACH_XIAOMI_ATOLL),y)
+ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
+dtbo-$(CONFIG_ARCH_ATOLL) += \
+		custa-atoll-ab-idp-overlay.dtbo \
+		custd-atoll-ab-idp-overlay.dtbo \
+		custe-atoll-ab-idp-overlay.dtbo \
+		custj-atoll-ab-idp-overlay.dtbo \
+		custg-atoll-ab-idp-overlay.dtbo
+
+custa-atoll-ab-idp-overlay.dtbo-base := cust-atoll-ab.dtb
+custd-atoll-ab-idp-overlay.dtbo-base := cust-atoll-ab.dtb
+custe-atoll-ab-idp-overlay.dtbo-base := cust-atoll-ab.dtb
+custj-atoll-ab-idp-overlay.dtbo-base := cust-atoll-ab.dtb
+custg-atoll-ab-idp-overlay.dtbo-base := cust-atoll-ab.dtb
+endif
+else
 ifeq ($(TARGET_BOARD_TYPE),auto)
 ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
 	dtbo-$(CONFIG_ARCH_SM8150) += \
@@ -586,6 +602,7 @@ endif
 
 endif
 
+endif
 ifeq ($(CONFIG_ARM64),y)
 always		:= $(dtb-y)
 subdir-y	:= $(dts-dirs)

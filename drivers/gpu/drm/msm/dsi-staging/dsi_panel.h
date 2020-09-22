@@ -53,6 +53,11 @@ enum dsi_backlight_type {
 	DSI_BACKLIGHT_MAX,
 };
 
+enum dsi_doze_mode_type {
+	DSI_DOZE_LPM = 0,
+	DSI_DOZE_HBM,
+};
+
 enum bl_update_flag {
 	BL_UPDATE_DELAY_UNTIL_FIRST_FRAME,
 	BL_UPDATE_NONE,
@@ -118,6 +123,8 @@ struct dsi_backlight_config {
 	u32 bl_level;
 	u32 bl_scale;
 	u32 bl_scale_ad;
+	u32 bl_doze_lpm;
+	u32 bl_doze_hbm;
 
 	int en_gpio;
 	bool dcs_type_ss;
@@ -166,17 +173,12 @@ struct drm_panel_esd_config {
 	u8 *return_buf;
 	u8 *status_buf;
 	u32 groups;
-	int esd_err_irq_gpio;
-	int esd_err_irq;
-	int esd_err_irq_flags;
 };
 
-struct dsi_read_config {
-	bool enabled;
-	struct dsi_panel_cmd_set read_cmd;
-	u32 cmds_rlen;
-	u32 valid_bits;
-	u8 rbuf[64];
+#define BRIGHTNESS_ALPHA_PAIR_LEN 2
+struct brightness_alpha_pair {
+	u32 brightness;
+	u32 alpha;
 };
 
 struct dsi_panel {
@@ -213,6 +215,8 @@ struct dsi_panel {
 
 	struct dsi_parser_utils utils;
 
+	int hbm_mode;
+
 	bool lp11_init;
 	bool ulps_feature_enabled;
 	bool ulps_suspend_enabled;
@@ -223,64 +227,20 @@ struct dsi_panel {
 	bool te_using_watchdog_timer;
 	u32 qsync_min_fps;
 
-	bool dispparam_enabled;
-	u32 skip_dimmingon;
-
 	char dsc_pps_cmd[DSI_CMD_PPS_SIZE];
 	enum dsi_dms_mode dms_mode;
 
 	bool sync_broadcast_en;
-
-	u32 panel_on_dimming_delay;
-	struct delayed_work cmds_work;
-	u32 last_bl_lvl;
-	s32 backlight_delta;
-
-	bool hbm_enabled;
-	bool fod_hbm_enabled; /* prevent set DISPPARAM_DOZE_BRIGHTNESS_HBM/LBM in FOD HBM */
-	bool fod_dimlayer_enabled;
-	bool fod_dimlayer_hbm_enabled;
-	bool fod_ui_ready;
-	u32 doze_backlight_threshold;
-	u32 fod_off_dimming_delay;
-	ktime_t fod_hbm_off_time;
-	ktime_t fod_backlight_off_time;
-
-	u32 panel_p3_mode;
-	u32 close_crc;
-
-	bool elvss_dimming_check_enable;
-	struct dsi_read_config elvss_dimming_cmds;
-	struct dsi_panel_cmd_set elvss_dimming_offset;
-	struct dsi_panel_cmd_set hbm_fod_on;
-	struct dsi_panel_cmd_set hbm_fod_off;
-
-	bool fod_backlight_flag;
-	u32 fod_target_backlight;
-	bool fod_flag;
-	bool in_aod; /* set  DISPPARAM_DOZE_BRIGHTNESS_HBM/LBM only in AOD */
-
-	/* Display count */
-	bool panel_active_count_enable;
-	u64 boottime;
-	u64 bootRTCtime;
-	u64 bootdays;
-	u64 panel_active;
-	u64 kickoff_count;
-	u64 bl_duration;
-	u64 bl_level_integral;
-	u64 bl_highlevel_duration;
-	u64 bl_lowlevel_duration;
-	u64 hbm_duration;
-	u64 hbm_times;
-
-	u32 dc_threshold;
-	bool dc_enable;
-	bool fod_dimlayer_bl_block;
-	bool dim_layer_replace_dc;
-
 	int power_mode;
 	enum dsi_panel_physical_type panel_type;
+
+	bool doze_enabled;
+	enum dsi_doze_mode_type doze_mode;
+ 	bool resend_ea;
+	bool resend_ea_hbm;
+
+	struct brightness_alpha_pair *fod_dim_lut;
+	u32 fod_dim_lut_count;
 };
 
 static inline bool dsi_panel_ulps_feature_enabled(struct dsi_panel *panel)
@@ -400,5 +360,15 @@ struct dsi_panel *dsi_panel_ext_bridge_get(struct device *parent,
 int dsi_panel_parse_esd_reg_read_configs(struct dsi_panel *panel);
 
 void dsi_panel_ext_bridge_put(struct dsi_panel *panel);
+
+int dsi_panel_set_doze_status(struct dsi_panel *panel, bool status);
+
+int dsi_panel_set_doze_mode(struct dsi_panel *panel, enum dsi_doze_mode_type mode);
+
+int dsi_panel_set_fod_hbm(struct dsi_panel *panel, bool status);
+
+u32 dsi_panel_get_fod_dim_alpha(struct dsi_panel *panel);
+
+int dsi_panel_apply_hbm_mode(struct dsi_panel *panel);
 
 #endif /* _DSI_PANEL_H_ */

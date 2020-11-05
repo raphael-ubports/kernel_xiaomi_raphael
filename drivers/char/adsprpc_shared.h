@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -241,6 +241,13 @@ struct fastrpc_ioctl_perf {			/* kernel performance data */
 	uintptr_t keys;
 };
 
+enum fastrpc_control_type {
+	FASTRPC_CONTROL_LATENCY		=	1,
+	FASTRPC_CONTROL_SMMU		=	2,
+	FASTRPC_CONTROL_KALLOC		=	3,
+	FASTRPC_CONTROL_WAKELOCK	=	4,
+};
+
 #define FASTRPC_MAX_DSP_ATTRIBUTES	(7)
 
 #define FASTRPC_CONTROL_LATENCY	(1)
@@ -249,13 +256,16 @@ struct fastrpc_ctrl_latency {
 	uint32_t level;		/* level of control */
 };
 
-#define FASTRPC_CONTROL_KALLOC	(3)
 struct fastrpc_ctrl_kalloc {
 	uint32_t kalloc_support;  /* Remote memory allocation from kernel */
 };
-/* FASTRPC_CONTROL value 2 is reserved in user space */
 
-#define FASTRPC_GET_DSP_INFO	(4)
+struct fastrpc_ctrl_wakelock {
+	uint32_t enable;	/* wakelock control enable */
+};
+
+/* FASTRPC_CONTROL value 2 is reserved in user space */
+#define FASTRPC_GET_DSP_INFO   (5)
 struct fastrpc_dsp_capabilities {
 	union {
 		uint32_t is_cached;	//! Flag if dsp attributes are cached
@@ -263,11 +273,13 @@ struct fastrpc_dsp_capabilities {
 	};
 	uint32_t dsp_attributes[FASTRPC_MAX_DSP_ATTRIBUTES];
 };
+
 struct fastrpc_ioctl_control {
 	uint32_t req;
 	union {
 		struct fastrpc_ctrl_latency lp;
 		struct fastrpc_ctrl_kalloc kalloc;
+		struct fastrpc_ctrl_wakelock wp;
 		struct fastrpc_dsp_capabilities dsp_cap;
 	};
 };

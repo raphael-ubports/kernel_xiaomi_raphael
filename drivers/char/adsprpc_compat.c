@@ -137,7 +137,6 @@ struct compat_fastrpc_ctrl_kalloc {
 	compat_uint_t kalloc_support; /* Remote memory allocation from kernel */
 };
 
-#define FASTRPC_GET_DSP_INFO		(4)
 struct compat_fastrpc_dsp_capabilities {
 	compat_uint_t domain;	/* DSP domain to query capabilities */
 	compat_uint_t dsp_attributes[FASTRPC_MAX_DSP_ATTRIBUTES];

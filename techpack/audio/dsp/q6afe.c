@@ -2475,8 +2475,8 @@ static int send_afe_cal_type(int cal_index, int port_id)
 		cal_block = cal_utils_get_only_cal_block(
 				this_afe.cal_data[cal_index]);
 
-	if (cal_block == NULL || cal_utils_is_cal_stale(cal_block, this_afe.cal_data[cal_index])) {
-		pr_err("%s cal_block not found!!\n", __func__);
+	if (cal_block == NULL || cal_utils_is_cal_stale(cal_block)) {
+		pr_err_ratelimited("%s cal_block not found!!\n", __func__);
 		ret = -EINVAL;
 		goto unlock;
 	}
